@@ -1,8 +1,12 @@
 import React from "react";
 import './Post.css'
+import reactRating from "react-rating";
+
 import { Avatar } from "@mui/material";
 
-function Post({ username, caption, image}){
+var Rating = reactRating;
+
+function Post({ username, caption, image, initRating}){
     return (
         <div className="post">
             <div className="post-header">
@@ -13,7 +17,9 @@ function Post({ username, caption, image}){
                 <h3>{username}</h3>
             </div>
             <img className = "post-image" src = {image}/>
-
+            <div>
+                <Rating placeholderRating={initRating}/>
+            </div>
             <h4 className="post-text"><strong>{username}:</strong> {caption}</h4>
         </div>
     )
