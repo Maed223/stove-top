@@ -2,13 +2,13 @@ import React from "react";
 import './Post.css'
 import { Avatar } from "@mui/material";
 
-function Post({ username, caption, image}){
+function Post({ username, picture, recipe, caption, image}){
     return (
         <div className="post">
             <div className="post-header">
                 <Avatar
                     className="post-profile-pic"
-                    src="https://pbs.twimg.com/profile_images/1564398871996174336/M-hffw5a_400x400.jpg"
+                    src={picture}
                 />
                 <h3>{username}</h3>
             </div>
@@ -19,4 +19,4 @@ function Post({ username, caption, image}){
     )
 }
 
-export default Post
+export default Post;
