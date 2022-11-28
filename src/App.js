@@ -3,8 +3,8 @@ import './App.css';
 import Post from "./components/post/Post"
 import { Login } from './components/login/Login'
 import { Header } from './components/header/Header';
-import { getPosts, getUser } from "./firebase"
-import { Modal, Input, Box, ButtonGroup, Avatar} from '@mui/material';
+import { getPosts} from "./firebase"
+import { Modal, ButtonGroup, Avatar} from '@mui/material';
 import { Button } from '@mui/material';
 import { CreatePost } from './components/post/create-post/CreatePost';
 
@@ -59,13 +59,18 @@ function App() {
     setCreatePost(true)
   }
 
+  const handleClose = () => {
+    setOpen(false)
+    setCreatePost(false)
+  }
+
   return (
     <div className="app">
       <Modal open={open} onClose = {() => setOpen(false)}>
-        <Login handleLogin={handleLogin} newUser = {newUser}/>
+        <Login handleLogin={handleLogin} handleClose = {handleClose} newUser = {newUser}/>
       </Modal>
       <Modal open={createPost} onClose = {() => setOpen(false)}>
-        <CreatePost handlePublish = {handlePublish} username = {username} picture = {picture}/>
+        <CreatePost handlePublish = {handlePublish} handleClose = {handleClose} username = {username} picture = {picture}/>
       </Modal>
       <Header/>
       {username ? (

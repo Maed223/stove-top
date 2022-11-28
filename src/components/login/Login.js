@@ -17,7 +17,16 @@ const style = {
     p: 4,
   };
 
-export function Login({handleLogin, newUser}){
+  const exitStyle = {
+    transform: 'translate(-45%, -55%)',
+    width: 2,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 2,
+    p: 1,
+  }
+
+export function Login({handleLogin, handleClose,  newUser}){
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -35,6 +44,10 @@ export function Login({handleLogin, newUser}){
 
     const signUp = (
       <Box sx={style}>
+
+        <Button sx={exitStyle} onClick={handleClose}>
+          X
+        </Button>
         <form className="app-sign-in">
           <Input
             type = 'text'
@@ -67,6 +80,9 @@ export function Login({handleLogin, newUser}){
 
     const signIn = (
       <Box sx={style}>
+        <Button sx={exitStyle} onClick={handleClose}>
+          X
+        </Button>
         <form className="app-sign-in">
           <Input
             type = 'text'
