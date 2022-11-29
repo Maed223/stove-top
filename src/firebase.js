@@ -52,12 +52,13 @@ async function getUser(email){
   }
 }
 
-async function addPost(username, caption, image, picture) {
+async function addPost(username, caption, image, picture, recipe) {
   const docRef = await addDoc(collection(db, "posts"), {
     caption: caption,
     image: image,
     username: username,
-    picture: picture
+    picture: picture,
+    recipe: recipe
   });
 }
 //DATABASE STUFF

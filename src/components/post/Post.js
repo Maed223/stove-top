@@ -23,9 +23,10 @@ const recipeStyle = {
     
 }
 
-function Post({ username, picture, recipe, caption, image}){
+function Post({ username, picture, recipe, caption, image, comments}){
     const [rating, setRating] = useState(0);
 
+    console.log(recipe)
 
     return (
         <div className="post">
@@ -59,6 +60,14 @@ function Post({ username, picture, recipe, caption, image}){
                         <TableCell>Ingredient</TableCell>
                         <TableCell>Amount</TableCell>
                     </TableRow>
+                    {
+                        recipe.map((x) => (
+                            <TableRow>
+                                <TableCell>{x.ingredient}</TableCell>
+                                <TableCell>{x.amount}</TableCell>
+                            </TableRow>
+                        ))
+                    }
                 </TableHead>
             </Table>
             <Comments></Comments>

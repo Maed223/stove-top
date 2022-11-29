@@ -11,7 +11,25 @@ export function Comments(){
     <Header as='h3' dividing>
       Comments
     </Header>
-
+    <div>
+          {
+            comments.map(({ comment }) => (
+              <Comment>
+              <Comment.Avatar src={comment.user.avatar} />
+                <Comment.Content>
+                  <Comment.Author as='a'>{comment.user.name}</Comment.Author>
+                  <Comment.Metadata>
+                    <div>{comment.timestamp}</div>
+                  </Comment.Metadata>
+                  <Comment.Text>{comment.text}</Comment.Text>
+                  <Comment.Actions>
+                    <Comment.Action>Reply</Comment.Action>
+                  </Comment.Actions>
+                </Comment.Content>
+              </Comment>
+            ))
+          }
+    </div>
     <Comment>
       <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/matt.jpg' />
       <Comment.Content>
