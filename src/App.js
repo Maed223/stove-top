@@ -4,14 +4,16 @@ import Post from "./components/post/Post"
 import { Login } from './components/login/Login'
 import { Header } from './components/header/Header';
 import { getPosts} from "./firebase"
-import { Modal, ButtonGroup, Avatar} from '@mui/material';
+import { Modal, ButtonGroup, Avatar, Box} from '@mui/material';
 import { Button } from '@mui/material';
 import { CreatePost } from './components/post/create-post/CreatePost';
+import { Sidebar } from './components/sidebar/Sidebar';
 
 function App() {
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState('');
+  const [user, setUser] = useState({})
   const [picture, setPicture] = useState('');
   const [newUser, setNewUser] = useState(false);
   const [createPost, setCreatePost] = useState(false);
@@ -27,6 +29,7 @@ function App() {
   }, [])
 
   const handleLogin = (user) => {
+    setUser(user)
     setUsername(user.username)
     setPicture(user.picture)
     setOpen(false)
@@ -96,17 +99,21 @@ function App() {
         </div>
       )}
       <br></br>
-
-      <div className='posts-section'>
-        <div className='posts'>
-          {
-            posts.map(({ id, post}) => (
-              <Post key={id} picture = {post.picture} username ={post.username} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments}/>
-            ))
-          }
-        </div>
-      </div>
-      <br></br>
+      <Box>
+        <Sidebar></Sidebar>
+        <Box>
+          <div className='posts-section'>
+            <div className='posts'>
+              {
+                posts.map(({ id, post}) => (
+                  <Post key={id} postId = {id} picture = {post.picture} username ={post.username} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                ))
+              }
+            </div>
+          </div>
+          <br></br>
+        </Box>
+      </Box>
     </div>
     
   );

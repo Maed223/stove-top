@@ -48,8 +48,6 @@ export function CreatePost({handlePublish, handleClose, username, picture}){
     }
     
     const handleAdd = () => {
-        console.log(items)
-        console.log({ingredient})
         let currItems = items;
 
         currItems.push({

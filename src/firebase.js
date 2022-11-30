@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
+
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc,doc } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc, doc, arrayUnion, updateDoc } from 'firebase/firestore/lite';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -58,8 +59,31 @@ async function addPost(username, caption, image, picture, recipe) {
     image: image,
     username: username,
     picture: picture,
-    recipe: recipe
+    recipe: recipe,
+    comments: []
   });
+}
+
+async function addComment(user, postId, comment) {
+  const post = doc(db, "posts", postId);
+
+  // Atomically add a new region to the "regions" array field.
+  await updateDoc(post, {
+      comments: arrayUnion({
+        username: user.username,
+        picture: user.picture,
+        comment: comment
+      })
+  });
+}
+
+async function getComments(postId){
+  const post = doc(db, "posts", postId)
+  const postSnap = await getDoc(post)
+  const postData = postSnap.data()
+  const postComments = postData.comments
+  return postComments
+
 }
 //DATABASE STUFF
 
@@ -69,7 +93,6 @@ const auth = getAuth(app)
 async function createUser(email, username, password, picture) {
   const userCred = await createUserWithEmailAndPassword(auth, email, password).catch((error) => alert(error))
   await addUser(email, username, password, picture)
-  console.log(userCred)
 }
 
 async function userSignIn(email, password) {
@@ -78,4 +101,4 @@ async function userSignIn(email, password) {
 //USER AUTH STUFF
 
 
-export { createUser, userSignIn, getPosts, getUser, addPost };
+export { createUser, userSignIn, getPosts, getUser, addPost, addComment, getComments };

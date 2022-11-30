@@ -1,100 +1,73 @@
-import React, { useState} from 'react';
-import { Button, Comment, Form, Header } from 'semantic-ui-react'
+import React, { useState, useEffect} from 'react';
+import { Button} from "@mui/material";
+import { Divider, Avatar, Grid, Paper, TextField } from "@mui/material";
+import { addComment, getComments } from "../../../firebase"
 
-
-export function Comments(){
-    const [show, setShow] = useState(false);
+export function Comments({currUser, postId}){
+    
+    const [comment, setComment] = useState('')
     const [comments, setComments] = useState([])
-  
+    
+    useEffect(() => {
+      // set the comments from db to comments state
+      const fetchComments = async () => {
+        const comments = await getComments(postId)
+        setComments(comments) 
+      }
+      fetchComments().catch(console.error)
+    }, []) 
+
+    const handleAddComment = () => {
+      if(currUser.username){
+        const handleCommentPublish = async () => {
+          await addComment(currUser, postId, comment)
+          const comments = await getComments(postId)
+          setComments(comments)
+          setComment("")
+          
+        }
+        handleCommentPublish().catch(console.error)
+      } else {
+        alert("Please sign in to comment")
+      }
+    }
+
     return (
-        <Comment.Group>
-    <Header as='h3' dividing>
-      Comments
-    </Header>
-    <div>
+      <div>
+        <div>
           {
-            comments.map(({ comment }) => (
-              <Comment>
-              <Comment.Avatar src={comment.user.avatar} />
-                <Comment.Content>
-                  <Comment.Author as='a'>{comment.user.name}</Comment.Author>
-                  <Comment.Metadata>
-                    <div>{comment.timestamp}</div>
-                  </Comment.Metadata>
-                  <Comment.Text>{comment.text}</Comment.Text>
-                  <Comment.Actions>
-                    <Comment.Action>Reply</Comment.Action>
-                  </Comment.Actions>
-                </Comment.Content>
-              </Comment>
+            comments.map(({ comment, username, picture }) => (
+              <Paper style={{ padding: "40px 20px" }}>
+                <Grid container wrap="nowrap" spacing={2}>
+                  <Grid item>
+                    <Avatar src={picture} />
+                  </Grid>
+                  <Grid justifyContent="left" item xs zeroMinWidth>
+                    <h4>{username}</h4>
+                    <p>
+                      {comment}
+                    </p>
+                    <p style={{ textAlign: "left", color: "gray" }}>
+                      posted 1 minute ago
+                    </p>
+                  </Grid>
+                </Grid>
+              </Paper>
             ))
           }
-    </div>
-    <Comment>
-      <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/matt.jpg' />
-      <Comment.Content>
-        <Comment.Author as='a'>Matt</Comment.Author>
-        <Comment.Metadata>
-          <div>Today at 5:42PM</div>
-        </Comment.Metadata>
-        <Comment.Text>How artistic!</Comment.Text>
-        <Comment.Actions>
-          <Comment.Action>Reply</Comment.Action>
-        </Comment.Actions>
-      </Comment.Content>
-    </Comment>
-
-    <Comment>
-      <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/elliot.jpg' />
-      <Comment.Content>
-        <Comment.Author as='a'>Elliot Fu</Comment.Author>
-        <Comment.Metadata>
-          <div>Yesterday at 12:30AM</div>
-        </Comment.Metadata>
-        <Comment.Text>
-          <p>This has been very useful for my research. Thanks as well!</p>
-        </Comment.Text>
-        <Comment.Actions>
-          <Comment.Action>Reply</Comment.Action>
-        </Comment.Actions>
-      </Comment.Content>
-      <Comment.Group>
-        <Comment>
-          <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/jenny.jpg' />
-          <Comment.Content>
-            <Comment.Author as='a'>Jenny Hess</Comment.Author>
-            <Comment.Metadata>
-              <div>Just now</div>
-            </Comment.Metadata>
-            <Comment.Text>Elliot you are always so right :)</Comment.Text>
-            <Comment.Actions>
-              <Comment.Action>Reply</Comment.Action>
-            </Comment.Actions>
-          </Comment.Content>
-        </Comment>
-      </Comment.Group>
-    </Comment>
-
-    <Comment>
-      <Comment.Avatar src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' />
-      <Comment.Content>
-        <Comment.Author as='a'>Joe Henderson</Comment.Author>
-        <Comment.Metadata>
-          <div>5 days ago</div>
-        </Comment.Metadata>
-        <Comment.Text>Dude, this is awesome. Thanks so much</Comment.Text>
-        <Comment.Actions>
-          <Comment.Action>Reply</Comment.Action>
-        </Comment.Actions>
-      </Comment.Content>
-    </Comment>
-
-    <Form reply>
-      <Form.TextArea />
-      <Button content='Add Reply' labelPosition='left' icon='edit' primary />
-    </Form>
-  </Comment.Group>
-
+        </div>
+        <TextField
+          placeholder="Your comment...."
+          multiline
+          fullWidth={50}
+          value={comment}
+          maxRows={15}
+          onChange= {(e) => {
+            setComment(e.target.value);
+          }}
+        />
+        <Button onClick={handleAddComment}>Reply</Button>
+      </div>
     )
 }
 
