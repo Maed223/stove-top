@@ -59,7 +59,7 @@ export function Comments({currUser, postId}){
         <TextField
           placeholder="Your comment...."
           multiline
-          fullWidth={50}
+          fullWidth={true}
           value={comment}
           maxRows={15}
           onChange= {(e) => {

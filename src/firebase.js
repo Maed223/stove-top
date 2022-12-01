@@ -2,7 +2,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc, doc, arrayUnion, updateDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc, doc, arrayUnion, updateDoc, increment } from 'firebase/firestore/lite';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -60,14 +60,46 @@ async function addPost(username, caption, image, picture, recipe) {
     username: username,
     picture: picture,
     recipe: recipe,
-    comments: []
+    comments: [],
+    numRatings: 0,
+    rating: 0.0,
   });
+}
+
+async function addRating(postId, newRating){
+  const post = doc(db, "posts", postId);
+  const postSnap = await getDoc(post)
+  const postData = postSnap.data()
+
+  const newIntRating = parseInt(newRating);
+  let newAverage = 0
+  if(postData.numRatings === 0){  
+    newAverage = newIntRating;
+  }
+  if(postData.rating === 0 ){
+    if(newIntRating === 0){
+      newAverage = 0;
+    }
+    if(newIntRating !== 0){
+      newAverage = newIntRating/((postData.numRatings)+1)
+    } 
+  }
+  else{
+    const a = (postData.rating * postData.numRatings)
+    const b = a + newIntRating
+    const c = b / (postData.numRatings+1)
+    newAverage = c
+  }
+  
+  await updateDoc(post, {
+    rating: newAverage,
+    numRatings: increment(1)
+  })
 }
 
 async function addComment(user, postId, comment) {
   const post = doc(db, "posts", postId);
 
-  // Atomically add a new region to the "regions" array field.
   await updateDoc(post, {
       comments: arrayUnion({
         username: user.username,
@@ -85,7 +117,6 @@ async function getComments(postId){
   return postComments
 
 }
-//DATABASE STUFF
 
 //USER AUTH STUFF
 const auth = getAuth(app)
@@ -98,7 +129,6 @@ async function createUser(email, username, password, picture) {
 async function userSignIn(email, password) {
   await signInWithEmailAndPassword(auth, email, password).catch((error) => alert(error))
 }
-//USER AUTH STUFF
 
 
-export { createUser, userSignIn, getPosts, getUser, addPost, addComment, getComments };
+export { createUser, userSignIn, getPosts, getUser, addPost, addComment, getComments, addRating };

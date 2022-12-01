@@ -106,7 +106,7 @@ function App() {
             <div className='posts'>
               {
                 posts.map(({ id, post}) => (
-                  <Post key={id} postId = {id} picture = {post.picture} username ={post.username} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                  <Post key={id} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
                 ))
               }
             </div>

@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { BsFillBookmarkFill } from "react-icons/bs";
 import { Comments } from './comments/Comments'
+import { addRating } from '../../firebase'
 
 const saveStyle = {
     marginLeft: "auto",
@@ -27,8 +28,32 @@ const recipeStyle = {
     
 }
 
-function Post({ postId, username, picture, recipe, caption, image, comments, currUser}){
-    const [rating, setRating] = useState(0);
+
+
+function Post({ postId, rating, username, picture, recipe, caption, image, comments, currUser}){
+    const [userRating, setUserRating] = useState(0);
+
+    const handleRating = (newUserRating) => {
+        const addNewRating = async () => {
+            console.log("USER RATING IN POST")
+            console.log(newUserRating)
+            await addRating(postId, newUserRating) 
+        }
+        addNewRating().catch(console.error)
+    }
+
+    const handleRatingChange = (e) => {
+        if(currUser.username){
+            const value = e.target.value
+            setUserRating(value)
+            handleRating(value)
+        } else {
+            alert("Please sign in to comment")
+        }
+        
+    }
+
+
     return (
         <div className="post">
             <div className="post-header">
@@ -55,11 +80,16 @@ function Post({ postId, username, picture, recipe, caption, image, comments, cur
                 <Typography><strong>Rating</strong></Typography>
                 </AccordionSummary>
                 <AccordionDetails>
+                    Global Rating: {rating}
+                    <br></br>
+                    <br></br>
+                    Your Rating:
+                    <br></br>
                 <Rating
                     name="simple-controlled"
-                    value={rating}
-                    onChange={(event, newValue) => {
-                        setRating(newValue);
+                    value={userRating}
+                    onChange={(event) => {
+                        handleRatingChange(event)
                     }}
                 />
                 </AccordionDetails>
@@ -75,9 +105,6 @@ function Post({ postId, username, picture, recipe, caption, image, comments, cur
                 <AccordionDetails>
                     <Table sx={recipeStyle} aria-label="simple table">
                     <TableHead>
-                        <TableRow>
-                            <TableCell><strong>Recipe</strong></TableCell>
-                        </TableRow>
                         <TableRow>
                             <TableCell>Ingredient</TableCell>
                             <TableCell>Amount</TableCell>
