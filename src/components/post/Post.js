@@ -7,9 +7,9 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { BsFillBookmarkFill } from "react-icons/bs";
+import { BsFillBookmarkFill, BsFillTrashFill } from "react-icons/bs";
 import { Comments } from './comments/Comments'
-import { addRating } from '../../firebase'
+import { addRating, addSavedPost, removeSavedPost } from '../../firebase'
 
 const saveStyle = {
     marginLeft: "auto",
@@ -30,13 +30,11 @@ const recipeStyle = {
 
 
 
-function Post({ postId, rating, username, picture, recipe, caption, image, comments, currUser}){
+export function Post({ postId, unique, rating, username, picture, recipe, caption, image, comments, currUser, savedSectionFlag}){
     const [userRating, setUserRating] = useState(0);
 
     const handleRating = (newUserRating) => {
         const addNewRating = async () => {
-            console.log("USER RATING IN POST")
-            console.log(newUserRating)
             await addRating(postId, newUserRating) 
         }
         addNewRating().catch(console.error)
@@ -53,6 +51,26 @@ function Post({ postId, rating, username, picture, recipe, caption, image, comme
         
     }
 
+    const handleSavePost = () => {
+        if(currUser.username){
+            const savePost = async () => {
+                await addSavedPost(unique, currUser.email)
+                alert("Post is saved")
+            }
+            savePost().catch(console.error)
+        } else {
+            alert("Need to sign in to save a post")
+        }
+    }
+
+    const handleDeleteSavedPost = () => {
+        const deleteSavedPost = async () => {
+            await removeSavedPost(unique, currUser.email)
+            alert("Post has been removed from Saved Section")
+        }
+        deleteSavedPost().catch(console.error)
+    }
+
 
     return (
         <div className="post">
@@ -63,9 +81,22 @@ function Post({ postId, rating, username, picture, recipe, caption, image, comme
                     sx={avatarStyle}
                 />
                 <h3>{username}</h3>
-                <Button sx={saveStyle}>
-                    <BsFillBookmarkFill size={25}></BsFillBookmarkFill>
-                </Button>
+                {savedSectionFlag ? (
+                    <Button 
+                        sx={saveStyle}
+                        onClick={handleDeleteSavedPost}
+                    >
+                        <BsFillTrashFill size={25}></BsFillTrashFill>
+                    </Button>
+                ) : (
+                    <Button 
+                        sx={saveStyle}
+                        onClick={handleSavePost}
+                    >
+                        <BsFillBookmarkFill size={25}></BsFillBookmarkFill>
+                    </Button>
+                )}
+                
             </div>
             <img className = "post-image" src = {image}/>
 

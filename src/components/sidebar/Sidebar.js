@@ -31,7 +31,7 @@ export function Sidebar() {
             <Toolbar />
                 <Divider />
                     <List>
-                        {["Home",'Profile', 'Cookbook', 'Saved Posts', 'Drafts'].map((text, index) => (
+                        {["Home",'Profile', 'Cookbook', 'Saved Posts'].map((text, index) => (
                         <ListItem key={text} disablePadding>
                             <ListItemButton>
                             <ListItemIcon>

@@ -1,13 +1,9 @@
-// Import the functions you need from the SDKs you need
 
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc, doc, arrayUnion, updateDoc, increment } from 'firebase/firestore/lite';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, getDocs,addDoc, setDoc, getDoc, doc, arrayUnion, updateDoc, increment, FieldPath, query, where, arrayRemove } from 'firebase/firestore/lite';
+import {v4 as uuidv4} from 'uuid';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCNjQ50XbFSUhgnl-opOVqr3vRiRuS2n7E",
   authDomain: "stove-top-ed712.firebaseapp.com",
@@ -39,7 +35,13 @@ async function addUser(email, username, password, picture){
   const user = await setDoc(doc(db, "users", email), {
     username: username,
     picture: picture,
-    password: password
+    password: password,
+    email: email,
+    numPosts: 0,
+    numFollowers: 0,
+    followers: [],
+    numFollowing: 0,
+    following: []
   })
 }
 
@@ -53,6 +55,20 @@ async function getUser(email){
   }
 }
 
+export async function getUserPosts(username){
+  const postsRef = collection(db, 'posts');
+  const q = query(postsRef, 
+    where('username', '==', username));
+  
+  const querySnapshot = await getDocs(q);
+  const postList = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    post: doc.data()
+  }))
+
+  return postList
+}
+
 async function addPost(username, caption, image, picture, recipe) {
   const docRef = await addDoc(collection(db, "posts"), {
     caption: caption,
@@ -63,6 +79,7 @@ async function addPost(username, caption, image, picture, recipe) {
     comments: [],
     numRatings: 0,
     rating: 0.0,
+    unique: uuidv4()
   });
 }
 
@@ -118,6 +135,49 @@ async function getComments(postId){
 
 }
 
+async function addSavedPost(uniquePostId, userEmail){
+  /**
+  const post = doc(db, "posts", postId)
+  const postSnap = await getDoc(post)
+   */
+  const user = doc(db, "users", userEmail)
+  await updateDoc(user, {
+    savedPosts: arrayUnion(uniquePostId)
+  })
+}
+
+export async function removeSavedPost(uniquePostId, userEmail){
+  /**
+  const post = doc(db, "posts", postId)
+  const postSnap = await getDoc(post)
+   */
+  const user = doc(db, "users", userEmail)
+  await updateDoc(user, {
+    savedPosts: arrayRemove(uniquePostId)
+  })
+}
+
+
+
+async function getUserSavedPosts(userEmail){
+  const user = doc(db, "users", userEmail)
+  const userSnap = await getDoc(user)
+  const userData = userSnap.data()
+  const userSavedPostIds = userData.savedPosts
+  
+  const postsRef = collection(db, 'posts');
+  const q = query(postsRef, 
+    where('unique', 'in', userSavedPostIds));
+  
+  const querySnapshot = await getDocs(q);
+  const postList = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    post: doc.data()
+  }))
+  
+  return postList;
+}
+
 //USER AUTH STUFF
 const auth = getAuth(app)
 
@@ -131,4 +191,4 @@ async function userSignIn(email, password) {
 }
 
 
-export { createUser, userSignIn, getPosts, getUser, addPost, addComment, getComments, addRating };
+export { createUser, userSignIn, getPosts, getUser, addPost, addComment, getComments, addRating, addSavedPost, getUserSavedPosts };
