@@ -3,11 +3,12 @@ import './App.css';
 import { Login } from './components/login/Login'
 import { Header } from './components/header/Header';
 import { Content } from './components/content/Content'
-import { getPosts, getUserSavedPosts, getUserPosts } from "./firebase"
-import { Modal, ButtonGroup, Avatar, Box} from '@mui/material';
+import { getPosts, getUserSavedPosts, getUserPosts, addUserToFollowing, addUserToFollowers, removeUserFollow, removeUserFromFollowers, getUser, getUserFollowingPosts } from "./firebase"
+import { Modal, ButtonGroup, Avatar, Box, Grid, Paper} from '@mui/material';
 import { Button } from '@mui/material';
 import { CreatePost } from './components/post/create-post/CreatePost';
-
+import { Profile } from './components/content/profile/Profile'
+import { Post } from './components/post/Post'
 import Drawer from '@mui/material/Drawer';
 import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
@@ -16,23 +17,92 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { BsFillBookmarkFill, BsFillTrashFill } from "react-icons/bs";
+import { SlUserFollowing } from "react-icons/sl";
+import { AiOutlineHome } from "react-icons/ai";
+import { RiBookOpenLine, RiBookmarkLine } from "react-icons/ri";
+
+
+const boxStyle = {
+  position: 'absolute',
+  top: '100%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '70%',
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 10,
+};
+
+const profileModalStyle = {
+
+  overflow:'scroll',
+}
+
+const headerStyle = {
+  p: 2, 
+  padding: '20px'
+}
+
+const paperStyle = {
+  textAlign: 'center',
+  justifyContent: 'center',
+  height: '50',
+  lineHeight: '49px',
+}
+
+const headerProfileStyle = {
+  p: 2, 
+  padding: '50px'
+}
+
+const accordStyle = {
+  height: "200px"
+}
 
 function App() {
   const [posts, setPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([])
-  const [userPosts, setUserPosts] = useState([])
-  const [open, setOpen] = useState(false);
+  const [followingPosts, setFollowingPosts] = useState([])
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [user, setUser] = useState({})
   const [picture, setPicture] = useState('');
   const [newUser, setNewUser] = useState(false);
   const [createPost, setCreatePost] = useState(false);
+  // Set view for profile
+  const [viewProfile, setViewProfile] = useState(false);
   //Used to change whats being displayed in content section
-  const [homeFlag, setHomeFlag] = useState(true);
-  const [savedFlag, setSavedFlag] = useState(false);
-  const [cookbookFlag, setCookbookFlag] = useState(false);
-  const [profileFlag, setProfileFlag] = useState(false);
+  const [displayFlags, setDisplayFlags] = useState({
+    homeFlag: true,
+    savedFlag: false,
+    cookbookFlag: false,
+    followingFlag: false
+  })
+  // For Profile viewing
+  const [postUser, setPostUser] = useState({
+    followers: [],
+    following: []
+  })
+  const [postUserPosts, setPostUserPosts] = useState([])
 
+  const handleSetPostUser = (user) => {
+    setPostUser(user)
+  }
+
+  const handleSetPostUserPosts = (posts) => {
+    setPostUserPosts(posts)
+  }
+
+  const handleSetProfileView = () => {
+    setViewProfile(true)
+  }
 
   //runs upon page being reloaded
   useEffect(() => {
@@ -44,29 +114,40 @@ function App() {
     fetchPosts().catch(console.error)
   }, [])
 
-  const handleGetUserPosts = () => {
-    const fetchUserPosts = async() => {
-      const posts = await getUserPosts(user.username)
-      console.log("USER POSTS IN APP")
-      console.log(posts)
-      setUserPosts(posts)
+  const removePostFromState = (unique) => {
+    console.log("how tf")
+    const newPosts = []
+    for(const post of posts){
+      if(post.post.unique != unique){
+        newPosts.push(post)
+      }
     }
-    fetchUserPosts().catch(console.error)
+    newPosts.reverse()
+    setPosts(newPosts)
   }
 
   const handleGetSavedPosts = () => {
     const fetchSavedPosts = async () => {
+      console.log("should hit")
       const userSavedPosts = await getUserSavedPosts(user.email)
       setSavedPosts(userSavedPosts)
     }
     fetchSavedPosts().catch(console.error)
   }
 
+  const handleGetFollowingPosts = () => {
+    const fetchPosts = async() => {
+      const followingPosts = await getUserFollowingPosts(user.email)
+      setFollowingPosts(followingPosts)
+    }
+    fetchPosts().catch(console.error)
+  }
+
   const handleLogin = (user) => {
     setUser(user)
     setUsername(user.username)
     setPicture(user.picture)
-    setOpen(false)
+    setDialogOpen(false)
   }
 
   const handlePublish = () => {
@@ -84,12 +165,12 @@ function App() {
 
   const signIn = (event) => {
     setNewUser(false)
-    setOpen(true)
+    setDialogOpen(true)
   }
 
   const signUp = (event) => {
     setNewUser(true)
-    setOpen(true)
+    setDialogOpen(true)
   }
 
   const creating = (event) => {
@@ -97,61 +178,274 @@ function App() {
   }
 
   const handleClose = () => {
-    setOpen(false)
+    setDialogOpen(false)
     setCreatePost(false)
   }
 
   const handleHomeFlag = () => {
-    setHomeFlag(true)
-    setCookbookFlag(false)
-    setSavedFlag(false)
-    setProfileFlag(false)
+    setDisplayFlags({
+      homeFlag: true,
+      savedFlag: false,
+      cookbookFlag: false,
+      followingFlag: false
+    })
   }
-
-  const handleProfileFlag = () => {
-    handleGetUserPosts()
-    setHomeFlag(false)
-    setCookbookFlag(false)
-    setSavedFlag(false)
-    setProfileFlag(true)
+  
+  const handleFollowingFlag = () => {
+    handleGetFollowingPosts()
+    setDisplayFlags({
+      homeFlag: false,
+      savedFlag: false,
+      cookbookFlag: false,
+      followingFlag: true
+    })
   }
 
   const handleCookbookFlag = () => {
-    setHomeFlag(false)
-    setCookbookFlag(true)
-    setSavedFlag(false)
-    setProfileFlag(false)
+    setDisplayFlags({
+      homeFlag: false,
+      savedFlag: false,
+      cookbookFlag: true,
+      followingFlag: false
+    })
   }
 
   const handleSavedFlag = () => {
     handleGetSavedPosts()
-    setHomeFlag(false)
-    setCookbookFlag(false)
-    setSavedFlag(true)
-    setProfileFlag(false)
+    setDisplayFlags({
+      homeFlag: false,
+      savedFlag: true,
+      cookbookFlag: false,
+      followingFlag: false
+    })
+  }
+
+  const currUserFollows = () => {
+    const currUserFollowing = user.following;
+    if(currUserFollowing && currUserFollowing.includes(postUser.email)){
+        return true;
+    } else {
+        return false;
+    }
+  }
+
+  const addFollow = (currUserEmail, postUserEmail) => {
+    console.log("asdnnn")
+    const followAdd = async (currUserEmail, postUserEmail) => {
+      await addUserToFollowing(currUserEmail, postUserEmail)
+      await addUserToFollowers(currUserEmail,postUserEmail)
+      const currUser = await getUser(currUserEmail)
+      const postUser = await getUser(postUserEmail)
+      setPostUser(postUser)
+      setUser(currUser)
+      handleGetFollowingPosts()
+    }
+    if(currUserEmail){
+      followAdd(currUserEmail, postUserEmail).catch(console.error)
+    } else {
+      alert("Must sign in to follow user")
+    }
+  }
+
+  const removeFollow = (currUserEmail, postUserEmail) => {
+    const followRemove = async (currUserEmail, postUserEmail) => {
+        await removeUserFollow(currUserEmail, postUserEmail)
+        await removeUserFromFollowers(currUserEmail, postUserEmail)
+        const currUser = await getUser(user.email)
+        const postUser = await getUser(postUserEmail)
+        setPostUser(postUser)
+        setUser(currUser)
+        handleGetFollowingPosts()
+    }
+    followRemove(currUserEmail, postUserEmail).catch(console.error)
+  }
+
+  const removeFollowInOwnProfile = (currUserEmail, postUserEmail) => {
+    const followRemove = async (currUserEmail, postUserEmail) => {
+      await removeUserFollow(currUserEmail, postUserEmail)
+      await removeUserFromFollowers(currUserEmail, postUserEmail)
+      const currUser = await getUser(user.email)
+      setPostUser(currUser)
+      setUser(currUser)
+      handleGetFollowingPosts()
+    }
+    followRemove(currUserEmail, postUserEmail).catch(console.error)
+  }
+
+  const handleViewOwnProfile = () => {
+    const fetch = async() => {
+      const currUser = await getUser(user.email)
+      const currUserPosts = await getUserPosts(user.username)
+      setUser(currUser)
+      setPostUser(currUser)
+      setPostUserPosts(currUserPosts)
+      setViewProfile(true)
+    }
+    fetch().catch(console.error)
   }
 
   return (
     <div className="app">
-      <Modal open={open} onClose = {() => setOpen(false)}>
+      <Modal sx={profileModalStyle} open={viewProfile} onClose = {() => setViewProfile(false)}>
+                <Box sx={boxStyle}>
+                <div>
+                    <div>
+                        {user !== {} && user.username === postUser.username ? (
+                        <Box>
+                            <Button variant="outlined">
+                                Edit account
+                            </Button>
+                        </Box>
+                        ) : (
+                            <>
+                                {user !== {} && currUserFollows() ? (
+                                    <Box>
+                                        <Button variant="outlined" onClick={() => removeFollow(user.email, postUser.email)}>
+                                            Un-Follow
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Button variant="outlined" onClick={() => addFollow(user.email, postUser.email)}>
+                                            Follow
+                                        </Button>
+                                    </Box>
+                                )}
+                            </>
+                        )}
+                        <Box sx={headerProfileStyle}>
+                            <Grid container spacing={2}>
+                                <Grid>
+                                    <Avatar
+                                    sx={{ width: 70, height: 70 }}
+                                    className="post-profile-pic"
+                                    src={postUser.picture}
+                                    
+                                    />
+                                </Grid>
+                                <Grid xs={2}>
+                                    <Typography><h1>{postUser.username}</h1></Typography>
+                                </Grid>
+                            </Grid>
+                                <br></br>
+                                <br></br>
+                                <h3>{postUser.description}</h3>
+                        </Box>
+                        
+                        <Box>
+                            <Grid container spacing={1}>
+                                <Grid xs={3}>
+                                    <Paper sx={paperStyle}>
+                                        <strong>Posts</strong>: {postUser.numPosts} 
+                                    </Paper>
+                                    
+                                </Grid>
+                                <Grid xs={4.5}>
+                                    <Paper sx={paperStyle}>
+                                        <Accordion>
+                                            <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="panel1a-content"
+                                            id="panel1a-header"
+                                            >
+                                            <Typography><strong>Followers</strong>: {postUser.followers.length}</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                {
+                                                    postUser.followers.map( follow => (<h4>{follow}</h4>))
+                                                }
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    </Paper>
+                                </Grid>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <br></br>
+                                <Grid xs={4.5}>
+                                    <Paper sx={paperStyle}>
+                                        <Accordion>
+                                            <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                            aria-controls="panel1a-content"
+                                            id="panel1a-header"
+                                            >
+                                            <Typography><strong>Following</strong>: {postUser.following.length}</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails sx={accordStyle}>
+                                                {
+                                                    postUser.following.map( follow => (
+                                                        <>
+                                                        {user !== {} && user.username === postUser.username ? (
+                                                            <Grid container spacing={1}>
+                                                                <h4>{follow}</h4>
+                                                                <Button size = 'small' onClick={() => removeFollowInOwnProfile(user.email, follow)}>UnFollow</Button>
+                                                            </Grid>
+                                                        ) : (
+                                                            <h4>{follow}</h4>
+                                                        )}
+                                                        </>
+                                                    ))
+                                                }
+                                            </AccordionDetails>
+                                        </Accordion> 
+                                    </Paper>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                        <br></br>
+                    </div>
+                    <div className='posts-gallery-section'>
+                        <div className='posts'>
+                            <Grid container spacing={1}>
+                                {
+                                    postUserPosts.map(({ id, post}) => (
+                                        <Grid xs={4}>   
+                                            <Post key={id} updateAllPostsCallback={removePostFromState} updateSavedPostsCallback={handleGetSavedPosts} handleSetProfileView={handleSetProfileView} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                                        </Grid>
+                                    ))
+                                }
+                            </Grid>
+                        </div>
+                    </div>    
+                </div>
+            </Box>
+        </Modal>
+      <Modal open={dialogOpen} onClose = {() => setDialogOpen(false)}>
         <Login handleLogin={handleLogin} handleClose = {handleClose} newUser = {newUser}/>
       </Modal>
-      <Modal open={createPost} onClose = {() => setOpen(false)}>
-        <CreatePost handlePublish = {handlePublish} handleClose = {handleClose} username = {username} picture = {picture}/>
+      <Modal open={createPost} onClose = {() => setDialogOpen(false)}>
+        <CreatePost handlePublish = {handlePublish} handleClose = {handleClose} currUser = {user} picture = {picture}/>
       </Modal>
+      {/* Header Section */}
       <Header/>
       {username ? (
         <div className='user-info'>
           <div>
-            <Avatar
-              className="post-profile-pic"
-              src={picture}
-            />
-            <h2>Current User: {username}</h2>
+            <Box sx={headerStyle}>
+                <Grid container spacing={2}>
+                    <Grid>
+                        <Avatar
+                        sx={{ width: 60, height: 60 }}
+                        className="post-profile-pic"
+                        src={user.picture}
+                        
+                        />
+                    </Grid>
+                    <Grid xs={2}>
+                      <Button onClick={handleViewOwnProfile}><Typography><h2>{username}</h2></Typography></Button>
+                    </Grid>
+                </Grid>
+            </Box>
             <ButtonGroup>
               <Button onClick={creating}>Create Post</Button>
               <Button onClick={signOut}>Sign Out</Button>
             </ButtonGroup>
+            
           </div>
         </div>
       ):(
@@ -164,6 +458,7 @@ function App() {
       )}
       <br></br>
       <Box>
+      {/* Sidebar Section */}
       <Box sx={{ display: 'flex' }}>
             <Drawer
             sx={{
@@ -183,50 +478,94 @@ function App() {
                       <ListItemButton
                         onClick={handleHomeFlag}>
                       <ListItemIcon>
-                          <Avatar />
+                          <AiOutlineHome size={39}></AiOutlineHome>
                       </ListItemIcon>
                       <ListItemText primary={"Home"} />
                       </ListItemButton>
                   </ListItem>
-                  <ListItem key={"Profile"} disablePadding>
+                  <Divider variant="inset" component="li" />
+                  <ListItem key={"Following"} disablePadding>
                       <ListItemButton
-                        onClick={handleProfileFlag}>
-                      <ListItemIcon>
-                        <Avatar />
-                      </ListItemIcon>
-                      <ListItemText primary={"Profile"} />
+                        onClick={handleFollowingFlag}
+                      >
+                        <ListItemIcon>
+                          <SlUserFollowing size={35}></SlUserFollowing>
+                        </ListItemIcon>
+                      <ListItemText primary={"Following"} />
                       </ListItemButton>
                   </ListItem>
+                  <Divider variant="inset" component="li" />
                   <ListItem key={"Cookbook"} disablePadding>
                       <ListItemButton
                         onClick={handleCookbookFlag}
                       >
                       <ListItemIcon>
-                        <Avatar />
+                        <RiBookOpenLine size={36}></RiBookOpenLine>
                       </ListItemIcon>
                       <ListItemText primary={"Cookbook"} />
                       </ListItemButton>
                   </ListItem>
+                  <Divider variant="inset" component="li" />
                   <ListItem key={"Saved Posts"} disablePadding>
                       <ListItemButton
                         onClick={handleSavedFlag}
                       >
                         <ListItemIcon>
-                          <Avatar />
+                          <RiBookmarkLine size={36}></RiBookmarkLine>
                         </ListItemIcon>
                       <ListItemText primary={"Saved Posts"} />
                       </ListItemButton>
                   </ListItem>
+                
               </List>
                   ) :(
                     <div></div>
                   )}
-                    
                 <Divider />
             </Drawer>
         </Box>
         <Box>
-          <Content posts={posts} savedPosts={savedPosts} userPosts={userPosts} currUser={user} homeFlag={homeFlag} savedFlag={savedFlag} cookbookFlag={cookbookFlag} profileFlag={profileFlag}></Content>
+        {/* Content Display Section */}
+          <div className='posts-section'>
+            {displayFlags.homeFlag ? (
+              <div className='posts'>
+                {
+                    posts.map(({ id, post}) => (
+                        <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                    ))
+                }
+              </div>
+            ) : (
+              <></>
+            )}
+            {displayFlags.savedFlag ? (
+              <div className='posts'>
+                {
+                  savedPosts.map(({ id, post}) => (
+                      <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={true} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                  ))
+                }
+              </div>
+            ) : (
+              <></>
+            )}
+            {displayFlags.followingFlag ? (
+              <div className='posts'>
+                {
+                  followingPosts.map(({ id, post}) => (
+                      <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                  ))
+                }
+              </div>
+            ) : (
+              <></>
+            )}
+            {displayFlags.cookbookFlag ? (
+              <></>
+            ) : (
+              <></>
+            )}
+            </div>
           <br></br>
         </Box>
       </Box>

@@ -30,7 +30,7 @@ const recipeStyle = {
 }
   
 
-export function CreatePost({handlePublish, handleClose, username, picture}){
+export function CreatePost({handlePublish, handleClose, currUser, picture}){
     const [caption, setCaption] = useState('');
     const [image, setImage] = useState('');
     const [ingredient, setIngredient] = useState('')
@@ -61,7 +61,7 @@ export function CreatePost({handlePublish, handleClose, username, picture}){
     }
 
     const handlePost = async (event) => {
-        await addPost(username, caption, image, picture, items)
+        await addPost(currUser.username, currUser.email, caption, image, picture, items)
         handlePublish()
     }
 

@@ -30,14 +30,16 @@ export function Login({handleLogin, handleClose,  newUser}){
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [description, setDescription] = useState('');
     const [picture, setPicture] = useState('');
 
     const handleEvent = async (event) => {
       if(newUser){
-        await createUser(email, username, password, picture).catch((error) => alert(error.message))
+        await createUser(email, username, password, description, picture).catch((error) => alert(error.message))
       } else {
         await userSignIn(email, password).catch((error) => alert(error.message))
       }
+      console.log("LOGIN")
       const currUser = await getUser(email).catch((error) => alert(error.message))
       handleLogin(currUser)
     }
@@ -66,6 +68,12 @@ export function Login({handleLogin, handleClose,  newUser}){
             placeholder = 'password'
             value = {password}
             onChange={(e) => setPassword(e.target.value)}
+          />
+          <Input
+            type = 'text'
+            placeholder = 'description'
+            value = {description}
+            onChange={(e) => setDescription(e.target.value)}
           />
           <Input
             type = 'text'
