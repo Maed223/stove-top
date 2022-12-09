@@ -146,7 +146,7 @@ export function Cookbook({currUser}){
                 <br></br>
                 <Box sx={{ display: 'inline' }}>
                     <Button variant="outlined" color="error" onClick= {handleGetRecipes}>
-                        <Typography>{ loading ?  ("Retriving your recipes...") : ("Get Recipes") }</Typography>
+                        <Typography>{ loading ?  ("Retrieving your recipes...") : ("Get Recipes") }</Typography>
                     </Button>
                 </Box>
             </Box>
