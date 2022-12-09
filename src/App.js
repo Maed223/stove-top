@@ -25,7 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { SlUserFollowing } from "react-icons/sl";
 import { AiOutlineHome, AiOutlineBook } from "react-icons/ai";
 import { RiBookOpenLine, RiBookmarkLine } from "react-icons/ri";
-
+import { IconContext } from "react-icons";
 
 const boxStyle = {
   position: 'absolute',
@@ -517,7 +517,13 @@ function App() {
                       <ListItemButton
                         onClick={handleHomeFlag}>
                       <ListItemIcon>
-                          <AiOutlineHome size={39}></AiOutlineHome>
+                      <IconContext.Provider
+                        value={{ size: '30px' }}
+                      >
+                        <div>
+                            <AiOutlineHome color={displayFlags.homeFlag ? 'blue' : '' } size={39}></AiOutlineHome>
+                        </div>
+                      </IconContext.Provider>
                       </ListItemIcon>
                       <ListItemText primary={"Home"} />
                       </ListItemButton>
@@ -528,7 +534,7 @@ function App() {
                         onClick={handleFollowingFlag}
                       >
                         <ListItemIcon>
-                          <SlUserFollowing size={35}></SlUserFollowing>
+                          <SlUserFollowing color={displayFlags.followingFlag ? 'blue' : '' } size={35}></SlUserFollowing>
                         </ListItemIcon>
                       <ListItemText primary={"Following"} />
                       </ListItemButton>
@@ -539,7 +545,7 @@ function App() {
                         onClick={handleCookbookFlag}
                       >
                       <ListItemIcon>
-                        <RiBookOpenLine size={36}></RiBookOpenLine>
+                        <RiBookOpenLine color={displayFlags.cookbookFlag ? 'blue' : '' } size={36}></RiBookOpenLine>
                       </ListItemIcon>
                       <ListItemText primary={"Cookbook"} />
                       </ListItemButton>
@@ -550,7 +556,7 @@ function App() {
                         onClick={handleSavedFlag}
                       >
                         <ListItemIcon>
-                          <RiBookmarkLine size={36}></RiBookmarkLine>
+                          <RiBookmarkLine color={displayFlags.savedFlag ? 'blue' : '' } size={36}></RiBookmarkLine>
                         </ListItemIcon>
                       <ListItemText primary={"Saved Posts"} />
                       </ListItemButton>
@@ -561,7 +567,7 @@ function App() {
                         onClick={handleSavedRecipeFlag}
                       >
                         <ListItemIcon>
-                          <AiOutlineBook size={37}></AiOutlineBook>
+                          <AiOutlineBook color={displayFlags.savedRecipeFlag ? 'blue' : '' } size={37}></AiOutlineBook>
                         </ListItemIcon>
                       <ListItemText primary={"Saved Recipes"} />
                       </ListItemButton>
