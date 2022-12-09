@@ -1,11 +1,12 @@
 import React from 'react';
-import './Header.css'
+import './header.css'
+import logo from './StoveTopLogo.png';
 
 export function Header() {
 
     return (
         <div className="header">
-            <h1>STOVE TOP</h1>
+            <h1><img src={logo} width="75" height="75"/> STOVE TOP</h1>
         </div>
     )
 }
