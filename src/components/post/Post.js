@@ -217,8 +217,10 @@ export function Post({ postId, recipeId, instructions, handleSetProfileView, upd
                     <br></br>
                     <TextField 
                         fullWidth 
+                        multiline
                         InputProps={{
                             readOnly: true,
+                            resizable: true,
                         }}
                         value={instructions}
                     >

@@ -15,6 +15,8 @@ const style = {
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
+    overflow:'scroll',
+    height: "75%" ,
     p: 4,
 }
 
