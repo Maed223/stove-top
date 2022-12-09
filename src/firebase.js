@@ -327,15 +327,13 @@ export async function removeUserFromFollowers(userFollowerEmail, userFollowingEm
 const auth = getAuth(app)
 
 async function createUser(email, username, password, description, picture) {
-  console.log("q")
-  const userCred = await createUserWithEmailAndPassword(auth, email, password).catch((error) => alert(error))
+  const userCred = await createUserWithEmailAndPassword(auth, email, password)
   await addUser(email, username, password, description, picture)
 }
 
 async function userSignIn(email, password) {
   console.log("r")
-  const usercred = await signInWithEmailAndPassword(auth, email, password)
-  console.log(usercred)
+  await signInWithEmailAndPassword(auth, email, password)  
 }
 
 

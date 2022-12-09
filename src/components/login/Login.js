@@ -32,25 +32,29 @@ export function Login({handleLogin, handleClose,  newUser}){
     const [picture, setPicture] = useState('');
 
     const handleEvent = async (event) => {
-      let currUser;
+      let successFlag = true;
+      console.log(successFlag)
       if(newUser){
         try {
           await createUser(email, username, password, description, picture)
         } catch(e) {
           alert(e.message)
-          return
+          successFlag = false
         }
         
       } else {
         try {
-          await userSignIn(email, password).catch((error) => alert(error.message))
+          await userSignIn(email, password)
         } catch(e) {
           alert(e.message)
-          return
+          successFlag = false
         }
       }
-      currUser = await getUser(email)
-      handleLogin(currUser)
+      console.log(successFlag)
+      if(successFlag){
+        const currUser = await getUser(email)
+        handleLogin(currUser)
+      }
       console.log("LOGdN")
     }
 
