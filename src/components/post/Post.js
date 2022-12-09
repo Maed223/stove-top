@@ -164,7 +164,7 @@ export function Post({ postId, recipeId, instructions, handleSetProfileView, upd
                     <Typography><strong>Rating</strong></Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        Global Rating: {rating}
+                        Global Rating: {rating.toFixed(2)}
                         <br></br>
                         <br></br>
                         Your Rating:
