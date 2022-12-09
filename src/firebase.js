@@ -40,7 +40,8 @@ async function addUser(email, username, password, description, picture){
     email: email,
     numPosts: 0,
     followers: [],
-    following: []
+    following: [],
+    savedRecipes: [],
   })
 }
 
@@ -77,6 +78,8 @@ export async function getUsers(emails){
   const usersRef = collection(db, 'users');
   const q = query(usersRef, 
     where('email', 'in', emailsToFind));
+
+  
   
   const querySnapshot = await getDocs(q);
   const usersList = querySnapshot.docs.map(doc => ({
@@ -87,11 +90,13 @@ export async function getUsers(emails){
   return usersList
 }
 
-async function addPost(username, email, caption, image, picture, recipe) {
+async function addPost(username, email, caption, image, picture, recipe, instructions) {
   console.log("f")
+
   await addDoc(collection(db, "posts"), {
     caption: caption,
     image: image,
+    instructions: instructions,
     username: username,
     email: email,
     picture: picture,
@@ -107,7 +112,7 @@ async function addPost(username, email, caption, image, picture, recipe) {
   })
 }
 
-export async function removePost(postId) {
+export async function removePost(postId, email) {
   console.log("u")
   const postsRef = collection(db, "posts");
   const q = query(postsRef, 
@@ -120,7 +125,11 @@ export async function removePost(postId) {
   console.log(postList)
   console.log(postList[0].id)
   await deleteDoc(doc(db, "posts", postList[0].id))
-  console.log(6)
+  const user = doc(db, "users", email)
+  await updateDoc(user, {
+    numPosts: increment(-1)
+  })
+
 }
 
 async function addRating(postId, newRating){
@@ -148,6 +157,7 @@ async function addRating(postId, newRating){
     const c = b / (postData.numRatings+1)
     newAverage = c
   }
+  console.log(newAverage)
   
   await updateDoc(post, {
     rating: newAverage,
@@ -186,6 +196,22 @@ async function addSavedPost(uniquePostId, userEmail){
   })
 }
 
+export async function addSavedRecipe(recipe, userEmail){
+  console.log("jj")
+  const user = doc(db, "users", userEmail)
+  await updateDoc(user, {
+    savedRecipes: arrayUnion(recipe)
+  })
+}
+
+export async function removeSavedRecipe(recipe, userEmail){
+  console.log("jj")
+  const user = doc(db, "users", userEmail)
+  await updateDoc(user, {
+    savedRecipes: arrayRemove(recipe)
+  })
+}
+
 export async function removeSavedPost(uniquePostId, userEmail){
   console.log("k")
   const user = doc(db, "users", userEmail)
@@ -202,6 +228,11 @@ async function getUserSavedPosts(userEmail){
   const userData = userSnap.data()
   
   const userSavedPostIds = userData.savedPosts
+  console.log(userSavedPostIds)
+
+  if(userSavedPostIds == []){
+    return [];
+  }
   
   const postsRef = collection(db, 'posts');
   const q = query(postsRef, 
@@ -223,10 +254,14 @@ export async function getUserFollowingPosts(userEmail){
 
   const userFollowing = userData.following
 
+  if(userFollowing.length == 0){
+    console.log("1")
+    return [];
+  }
+
   const postsRef = collection(db, 'posts');
   const q = query(postsRef, 
     where('email', 'in', userFollowing));
-
   const querySnapshot = await getDocs(q);
   const postList = querySnapshot.docs.map(doc => ({
     id: doc.id,
@@ -299,7 +334,8 @@ async function createUser(email, username, password, description, picture) {
 
 async function userSignIn(email, password) {
   console.log("r")
-  await signInWithEmailAndPassword(auth, email, password).catch((error) => alert(error))
+  const usercred = await signInWithEmailAndPassword(auth, email, password)
+  console.log(usercred)
 }
 
 

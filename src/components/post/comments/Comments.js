@@ -1,6 +1,6 @@
 import React, { useState, useEffect} from 'react';
 import { Button} from "@mui/material";
-import { Divider, Avatar, Grid, Paper, TextField } from "@mui/material";
+import { Avatar, Grid, Paper, TextField, Box, Divider } from "@mui/material";
 import { addComment, getComments } from "../../../firebase"
 
 export function Comments({currUser, postId}){
@@ -37,24 +37,28 @@ export function Comments({currUser, postId}){
         <div>
           {
             comments.map(({ comment, username, picture }) => (
-              <Paper style={{ padding: "40px 20px" }}>
-                <Grid container wrap="nowrap" spacing={2}>
-                  <Grid item>
-                    <Avatar src={picture} />
+              <>
+              <Box sx={{boxShadow: 2}}>
+                <Paper style={{ padding: "20px 20px"}}>
+                  <Grid container wrap="nowrap" spacing={2}>
+                    <Grid item>
+                      <Avatar src={picture} />
+                    </Grid>
+                    <Grid justifyContent="left" item xs zeroMinWidth>
+                      <h4>{username}</h4>
+                      <p>
+                        {comment}
+                      </p>
+                    </Grid>
                   </Grid>
-                  <Grid justifyContent="left" item xs zeroMinWidth>
-                    <h4>{username}</h4>
-                    <p>
-                      {comment}
-                    </p>
-                    <p style={{ textAlign: "left", color: "gray" }}>
-                      posted 1 minute ago
-                    </p>
-                  </Grid>
-                </Grid>
-              </Paper>
+                </Paper>
+              </Box>
+              <br></br>
+              </>
             ))
           }
+          <Divider/>
+          <br></br>
         </div>
         <TextField
           placeholder="Your comment...."
@@ -66,7 +70,9 @@ export function Comments({currUser, postId}){
             setComment(e.target.value);
           }}
         />
-        <Button onClick={handleAddComment}>Reply</Button>
+        <br></br>
+        <br></br>
+        <Button variant='outlined' onClick={handleAddComment}>Reply</Button>
       </div>
     )
 }

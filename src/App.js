@@ -2,12 +2,12 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import { Login } from './components/login/Login'
 import { Header } from './components/header/Header';
-import { Content } from './components/content/Content'
+import { Recipe } from './components/recipe/Recipe'
 import { getPosts, getUserSavedPosts, getUserPosts, addUserToFollowing, addUserToFollowers, removeUserFollow, removeUserFromFollowers, getUser, getUserFollowingPosts } from "./firebase"
 import { Modal, ButtonGroup, Avatar, Box, Grid, Paper} from '@mui/material';
 import { Button } from '@mui/material';
 import { CreatePost } from './components/post/create-post/CreatePost';
-import { Profile } from './components/content/profile/Profile'
+import { Cookbook } from './components/cookbook/Cookbook'
 import { Post } from './components/post/Post'
 import Drawer from '@mui/material/Drawer';
 import Toolbar from '@mui/material/Toolbar';
@@ -22,9 +22,8 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { BsFillBookmarkFill, BsFillTrashFill } from "react-icons/bs";
 import { SlUserFollowing } from "react-icons/sl";
-import { AiOutlineHome } from "react-icons/ai";
+import { AiOutlineHome, AiOutlineBook } from "react-icons/ai";
 import { RiBookOpenLine, RiBookmarkLine } from "react-icons/ri";
 
 
@@ -41,8 +40,10 @@ const boxStyle = {
 };
 
 const profileModalStyle = {
-
+  justifyContent: 'center',
+  height: '90%',
   overflow:'scroll',
+  height: '110vh'
 }
 
 const headerStyle = {
@@ -69,6 +70,7 @@ const accordStyle = {
 function App() {
   const [posts, setPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([])
+  const [savedRecipes, setSavedRecipes] = useState([])
   const [followingPosts, setFollowingPosts] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -82,6 +84,7 @@ function App() {
   const [displayFlags, setDisplayFlags] = useState({
     homeFlag: true,
     savedFlag: false,
+    savedRecipeFlag: false,
     cookbookFlag: false,
     followingFlag: false
   })
@@ -115,7 +118,6 @@ function App() {
   }, [])
 
   const removePostFromState = (unique) => {
-    console.log("how tf")
     const newPosts = []
     for(const post of posts){
       if(post.post.unique != unique){
@@ -161,6 +163,18 @@ function App() {
 
   const signOut = (event) => {
     setUsername(null)
+    setSavedPosts([])
+    setSavedRecipes([])
+    setFollowingPosts([])
+    setUser({})
+    setPicture('')
+    setDisplayFlags({
+      homeFlag: true,
+      savedFlag: false,
+      savedRecipeFlag: false,
+      cookbookFlag: false,
+      followingFlag: false
+    })
   }
 
   const signIn = (event) => {
@@ -186,6 +200,7 @@ function App() {
     setDisplayFlags({
       homeFlag: true,
       savedFlag: false,
+      savedRecipeFlag: false,
       cookbookFlag: false,
       followingFlag: false
     })
@@ -196,6 +211,7 @@ function App() {
     setDisplayFlags({
       homeFlag: false,
       savedFlag: false,
+      savedRecipeFlag: false,
       cookbookFlag: false,
       followingFlag: true
     })
@@ -205,6 +221,7 @@ function App() {
     setDisplayFlags({
       homeFlag: false,
       savedFlag: false,
+      savedRecipeFlag: false,
       cookbookFlag: true,
       followingFlag: false
     })
@@ -215,6 +232,28 @@ function App() {
     setDisplayFlags({
       homeFlag: false,
       savedFlag: true,
+      savedRecipeFlag: false,
+      cookbookFlag: false,
+      followingFlag: false
+    })
+  }
+
+  const updateSavedRecipes = () => {
+    const fetchUserUpdate = async() => {
+      const updatedUser = await getUser(user.email);
+      setUser(updatedUser);
+      setSavedRecipes(updatedUser.savedRecipes)
+    }
+    fetchUserUpdate().catch(console.error);
+  }
+
+  const handleSavedRecipeFlag = () => {
+    // update user
+    updateSavedRecipes()
+    setDisplayFlags({
+      homeFlag: false,
+      savedFlag: false,
+      savedRecipeFlag: true,
       cookbookFlag: false,
       followingFlag: false
     })
@@ -404,8 +443,8 @@ function App() {
                             <Grid container spacing={1}>
                                 {
                                     postUserPosts.map(({ id, post}) => (
-                                        <Grid xs={4}>   
-                                            <Post key={id} updateAllPostsCallback={removePostFromState} updateSavedPostsCallback={handleGetSavedPosts} handleSetProfileView={handleSetProfileView} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                                        <Grid xs={5}>   
+                                            <Post key={id} recipeId={post.recipeId} instructions={post.instructions} updateAllPostsCallback={removePostFromState} updateSavedPostsCallback={handleGetSavedPosts} handleSetProfileView={handleSetProfileView} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
                                         </Grid>
                                     ))
                                 }
@@ -443,7 +482,7 @@ function App() {
             </Box>
             <ButtonGroup>
               <Button onClick={creating}>Create Post</Button>
-              <Button onClick={signOut}>Sign Out</Button>
+              <Button color="error" onClick={signOut}>Sign Out</Button>
             </ButtonGroup>
             
           </div>
@@ -516,7 +555,17 @@ function App() {
                       <ListItemText primary={"Saved Posts"} />
                       </ListItemButton>
                   </ListItem>
-                
+                  <Divider variant="inset" component="li" />
+                  <ListItem key={"Saved Recipes"} disablePadding>
+                      <ListItemButton
+                        onClick={handleSavedRecipeFlag}
+                      >
+                        <ListItemIcon>
+                          <AiOutlineBook size={37}></AiOutlineBook>
+                        </ListItemIcon>
+                      <ListItemText primary={"Saved Recipes"} />
+                      </ListItemButton>
+                  </ListItem>
               </List>
                   ) :(
                     <div></div>
@@ -531,7 +580,7 @@ function App() {
               <div className='posts'>
                 {
                     posts.map(({ id, post}) => (
-                        <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                        <Post key={id} instructions={post.instructions} recipeId={post.recipeId} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
                     ))
                 }
               </div>
@@ -542,7 +591,7 @@ function App() {
               <div className='posts'>
                 {
                   savedPosts.map(({ id, post}) => (
-                      <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={true} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                      <Post key={id} instructions={post.instructions} recipeId={post.recipeId} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={true} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
                   ))
                 }
               </div>
@@ -553,7 +602,7 @@ function App() {
               <div className='posts'>
                 {
                   followingPosts.map(({ id, post}) => (
-                      <Post key={id} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
+                      <Post key={id} instructions={post.instructions} recipeId={post.recipeId} updateAllPostsCallback={removePostFromState} handleSetProfileView={handleSetProfileView} updateSavedPostsCallback={handleGetSavedPosts} postUserCallBack={handleSetPostUser} postUserPostsCallBack={handleSetPostUserPosts} savedSectionFlag={false} unique={post.unique} postId = {id} rating = {post.rating} picture = {post.picture} username ={post.username} email={post.email} caption={post.caption} image = {post.image} recipe = {post.recipe} comments = {post.comments} currUser = {user}/>
                   ))
                 }
               </div>
@@ -561,7 +610,23 @@ function App() {
               <></>
             )}
             {displayFlags.cookbookFlag ? (
+              <Cookbook currUser={user}></Cookbook>
+            ) : (
               <></>
+            )}
+            {displayFlags.savedRecipeFlag ? (
+              <div className='posts'>
+              {
+                savedRecipes.map(({title, ingredients, instructions}) => (
+                  <>
+                  <Recipe title={title} ingredients={ingredients} instructions={instructions} currUser={user} cookbookPageFlag={false} updateUserCallback={updateSavedRecipes}></Recipe>
+                  <br></br>
+                  <br></br>
+                  <br></br>
+                  </>
+                ))
+              }
+              </div>
             ) : (
               <></>
             )}

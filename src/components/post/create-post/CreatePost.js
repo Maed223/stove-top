@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Input, Box} from '@mui/material';
 import { addPost } from "../../../firebase"
-import { Button, Table, TableHead, TableRow, TableCell} from "@mui/material";
+import { Button, Table, TableHead, TableRow, TableCell, Typography, TextField, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
+import { BsFillTrashFill } from "react-icons/bs";
+import { AiFillCloseCircle } from "react-icons/ai";
+import { IconContext } from "react-icons";
 
 const style = {
     position: 'absolute',
@@ -18,10 +21,7 @@ const style = {
 const exitStyle = {
     transform: 'translate(-45%, -55%)',
     width: 2,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 2,
-    p: 1,
+    bgcolor: 'background.paper',  
 }
 
 const recipeStyle = {
@@ -33,8 +33,10 @@ const recipeStyle = {
 export function CreatePost({handlePublish, handleClose, currUser, picture}){
     const [caption, setCaption] = useState('');
     const [image, setImage] = useState('');
+    const [instructions, setInstructions] = useState('');
     const [ingredient, setIngredient] = useState('')
     const [amount, setAmount] = useState('')
+    const [unit, setUnit] = useState('')
     const [items, setItems] = useState([]);
 
 
@@ -46,46 +48,95 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
     const updateAmount = (value) => {
         setAmount(value)
     }
+
+    const updateUnit = (value) => {
+        setUnit(value)
+    }
     
     const handleAdd = () => {
         let currItems = items;
 
+        const newIngred = ingredient.toLowerCase()
+        const newAmt = amount.toLowerCase()
+
+        for(const item of items){
+            if(item.ingredient == newIngred){
+                alert("You cannot add the same ingrediant twice")
+                setIngredient("")
+                setAmount("")
+                setUnit("")
+                return
+            }
+        }
+
         currItems.push({
-            ingredient: ingredient,
-            amount: amount
+            ingredient: newIngred,
+            amount: newAmt,
+            unit: unit
         });
 
         setItems(items)
         setIngredient("")
         setAmount("")
+        setUnit("")
+    }
+
+    const deleteFromTable = (ingred, amt) => {
+        const newItems = []
+        for(const item of items){
+            if(item.ingredient != ingred){
+                newItems.push(item)
+            }
+        }
+        newItems.reverse()
+        setItems(newItems);
     }
 
     const handlePost = async (event) => {
-        await addPost(currUser.username, currUser.email, caption, image, picture, items)
+        handleClose()
+        await addPost(currUser.username, currUser.email, caption, image, picture, items, instructions)
         handlePublish()
     }
 
     return (
         <Box sx={style}>
             <Button sx={exitStyle} onClick={handleClose}>
-                X
+                <IconContext.Provider
+                value={{ color: 'red', size: '30px' }}
+                >
+                    <div>
+                        <AiFillCloseCircle></AiFillCloseCircle>
+                    </div>
+                </IconContext.Provider>
             </Button>
             <form className="create-post">
-                <Input
+                <TextField
                 type = 'text'
-                placeholder = 'caption'
+                placeholder = 'Caption'
                 value = {caption}
                 required = {true}
                 onChange={(e) => setCaption(e.target.value)}
                 />
                 <br></br>
                 <br></br>
-                <Input
+                <TextField
                 type = 'text'
-                placeholder = 'image'
+                placeholder = 'Image'
                 value = {image}
                 required = {true}
                 onChange={(e) => setImage(e.target.value)}
+                />
+                <br></br>
+                <br></br>
+                <TextField
+                type = 'text'
+                placeholder = 'Instructions'
+                multiline
+                fullWidth={true}
+                maxRows={15}
+                value = {instructions}
+                required = {true}
+                onChange={(e) => setInstructions(e.target.value)}
                 />
                 <br></br>
                 <br></br>
@@ -95,14 +146,17 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
                             <TableCell><strong>Recipe</strong></TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Ingredient</TableCell>
-                            <TableCell>Amount</TableCell>
+                            <TableCell><Typography><em>Ingredient</em></Typography></TableCell>
+                            <TableCell><Typography><em>Amount</em></Typography></TableCell>
+                            <TableCell><Typography><em>Unit</em></Typography></TableCell>
                         </TableRow>
                         {
                             items.map((item) => (
                                 <TableRow>
-                                    <TableCell>{item.ingredient}</TableCell>
-                                    <TableCell>{item.amount}</TableCell>
+                                    <TableCell><Typography>{item.ingredient}</Typography></TableCell>
+                                    <TableCell><Typography>{item.amount}</Typography></TableCell>
+                                    <TableCell><Typography>{item.unit}</Typography></TableCell>
+                                    <TableCell><Button onClick={(e) => deleteFromTable(item.ingredient, item.amount)}><BsFillTrashFill></BsFillTrashFill></Button></TableCell>
                                 </TableRow>
                             ))
                         }
@@ -110,7 +164,7 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
                 </Table>
                 <br></br>
                 <br></br>
-                <Input
+                <TextField
                     type="text"
                     value={ingredient}
                     placeholder="Ingredient"
@@ -118,7 +172,7 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
                         updateIngredient(e.target.value);
                     }}
                 />
-                <Input
+                <TextField
                     type="text"
                     value={amount}
                     placeholder="Amount"
@@ -128,7 +182,28 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
                 />
                 <br></br>
                 <br></br>
-                <Button onClick= {(e) => {
+                <FormControl sx={{width: 100}}>
+                    <InputLabel>Unit</InputLabel>
+                    <Select
+                        required
+                        defaultValue='Unit'
+                        value={unit}
+                        label="Unit"
+                        onChange={(e) => {updateUnit(e.target.value)}}
+                    >
+                        <MenuItem value={"Ounces"}>Ounces</MenuItem>
+                        <MenuItem value={"Pounds"}>Pounds</MenuItem>
+                        <MenuItem value={"Teaspoons"}>Teaspoons</MenuItem>
+                        <MenuItem value={"Tablespoons"}>Tablespoons</MenuItem>
+                        <MenuItem value={"ml"}>ml</MenuItem>
+                        <MenuItem value={"Liter"}>Liter</MenuItem>
+                        <MenuItem value={"Cup"}>Cup</MenuItem>
+                        <MenuItem value={"Gram"}>Gram</MenuItem>
+                    </Select>
+                </FormControl>
+                <br></br>
+                <br></br>
+                <Button variant='outlined' onClick= {(e) => {
                         handleAdd()
                     }}>
                     Add Ingredient
@@ -137,7 +212,7 @@ export function CreatePost({handlePublish, handleClose, currUser, picture}){
                 <br></br>
                 <br></br>
                 <br></br>
-                <Button onClick={handlePost}>Post</Button>
+                <Button variant='outlined' onClick={handlePost}>Post</Button>
             </form>
         </Box>
     )

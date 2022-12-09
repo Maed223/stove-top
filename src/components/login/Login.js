@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, Input, Box} from '@mui/material';
-import { Button } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { createUser, userSignIn, getUser } from "../../firebase"
 import './Login.css'
-
+import { AiFillCloseCircle } from "react-icons/ai";
+import { IconContext } from "react-icons";
 
 const style = {
     position: 'absolute',
@@ -20,11 +21,8 @@ const style = {
   const exitStyle = {
     transform: 'translate(-45%, -55%)',
     width: 2,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 2,
-    p: 1,
-  }
+    bgcolor: 'background.paper',  
+}
 
 export function Login({handleLogin, handleClose,  newUser}){
     const [username, setUsername] = useState('');
@@ -34,54 +32,77 @@ export function Login({handleLogin, handleClose,  newUser}){
     const [picture, setPicture] = useState('');
 
     const handleEvent = async (event) => {
+      let currUser;
       if(newUser){
-        await createUser(email, username, password, description, picture).catch((error) => alert(error.message))
+        try {
+          await createUser(email, username, password, description, picture)
+        } catch(e) {
+          alert(e.message)
+          return
+        }
+        
       } else {
-        await userSignIn(email, password).catch((error) => alert(error.message))
+        try {
+          await userSignIn(email, password).catch((error) => alert(error.message))
+        } catch(e) {
+          alert(e.message)
+          return
+        }
       }
-      console.log("LOGIN")
-      const currUser = await getUser(email).catch((error) => alert(error.message))
+      currUser = await getUser(email)
       handleLogin(currUser)
+      console.log("LOGdN")
     }
 
     const signUp = (
       <Box sx={style}>
 
         <Button sx={exitStyle} onClick={handleClose}>
-          X
+          <IconContext.Provider
+                value={{ color: 'red', size: '30px' }}
+                >
+                    <div>
+                        <AiFillCloseCircle></AiFillCloseCircle>
+                    </div>
+            </IconContext.Provider>
         </Button>
         <form className="app-sign-in">
-          <Input
+          <TextField
             type = 'text'
             placeholder = 'username'
             value = {username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <Input
+          <br></br>
+          <TextField
             type = 'text'
             placeholder = 'email'
             value = {email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Input
+          <br></br>
+          <TextField
             type = 'text'
             placeholder = 'password'
             value = {password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Input
+          <br></br>
+          <TextField
             type = 'text'
             placeholder = 'description'
             value = {description}
             onChange={(e) => setDescription(e.target.value)}
           />
-          <Input
+          <br></br>
+          <TextField
             type = 'text'
             placeholder = 'profile picture'
             value = {picture}
             onChange={(e) => setPicture(e.target.value)}
           />
-          <Button onClick={handleEvent}>Sign Up</Button>
+          <br></br>
+          <Button variant='outlined' onClick={handleEvent}>Sign Up</Button>
         </form>
       </Box>
     )
@@ -89,22 +110,30 @@ export function Login({handleLogin, handleClose,  newUser}){
     const signIn = (
       <Box sx={style}>
         <Button sx={exitStyle} onClick={handleClose}>
-          X
+          <IconContext.Provider
+                value={{ color: 'red', size: '30px' }}
+                >
+                    <div>
+                        <AiFillCloseCircle></AiFillCloseCircle>
+                    </div>
+          </IconContext.Provider>
         </Button>
         <form className="app-sign-in">
-          <Input
+          <TextField
             type = 'text'
             placeholder = 'email'
             value = {email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Input
+          <br></br>
+          <TextField
             type = 'text'
             placeholder = 'password'
             value = {password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button onClick={handleEvent}>Sign In</Button>
+          <br></br>
+          <Button variant='outlined' onClick={handleEvent}>Sign In</Button>
         </form>
       </Box>
     )

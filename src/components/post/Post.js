@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Post.css'
-import { Avatar, Button, Table, TableHead, TableRow, TableCell} from "@mui/material";
+import { Avatar, Button, Table, TableHead, TableRow, TableCell, TextField} from "@mui/material";
 import Rating from '@mui/material/Rating';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { BsFillBookmarkFill, BsFillTrashFill } from "react-icons/bs";
 import { Comments } from './comments/Comments'
-import { addRating, addSavedPost, removeSavedPost, getUserPosts, getUser, removePost} from '../../firebase'
+import { addRating, addSavedPost, removeSavedPost, getUserPosts, getUser, removePost, addSavedRecipe} from '../../firebase'
 import '../content/profile/Profile.css'
 
 
@@ -26,11 +26,10 @@ const avatarStyle = {
 
 const recipeStyle = {
     boxShadow: 4,
-    display: "flex",
-    
+    display: "flex",  
 }
 
-export function Post({ postId, handleSetProfileView, updateAllPostsCallback, updateSavedPostsCallback, postUserCallBack, postUserPostsCallBack, unique, rating, username, email, picture, recipe, caption, image, currUser, comments, savedSectionFlag, ownProfileFlag}){
+export function Post({ postId, recipeId, instructions, handleSetProfileView, updateAllPostsCallback, updateSavedPostsCallback, postUserCallBack, postUserPostsCallBack, unique, rating, username, email, picture, recipe, caption, image, currUser, comments, savedSectionFlag, ownProfileFlag}){
     const [userRating, setUserRating] = useState(0);
 
     const onProfileButtonPress = (event) => {
@@ -101,7 +100,7 @@ export function Post({ postId, handleSetProfileView, updateAllPostsCallback, upd
 
     const handleDeleteUserPost = () => {
         const deletePost = async() => {
-            await removePost(unique)
+            await removePost(unique, currUser.email)
             onProfilePostDelete()
             alert("Post has been deleted")
         }
@@ -189,21 +188,41 @@ export function Post({ postId, handleSetProfileView, updateAllPostsCallback, upd
                     </AccordionSummary>
                     <AccordionDetails>
                         <Table sx={recipeStyle} aria-label="simple table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Ingredient</TableCell>
-                                <TableCell>Amount</TableCell>
-                            </TableRow>
-                            {
-                                recipe.map((x) => (
-                                    <TableRow>
-                                        <TableCell>{x.ingredient}</TableCell>
-                                        <TableCell>{x.amount}</TableCell>
-                                    </TableRow>
-                                ))
-                            }
-                        </TableHead>
-                    </Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><Typography></Typography></TableCell>
+                                    <TableCell><Typography><em>Ingredient</em></Typography></TableCell>
+                                    <TableCell><Typography></Typography></TableCell>
+                                    <TableCell><Typography><em>Amount</em></Typography></TableCell>
+                                    <TableCell><Typography></Typography></TableCell>
+                                    <TableCell><Typography><em>Unit</em></Typography></TableCell>
+                                </TableRow>
+                                {
+                                    recipe.map((x) => (
+                                        <TableRow>
+                                            <TableCell><Typography></Typography></TableCell>
+                                            <TableCell><Typography>{x.ingredient}</Typography></TableCell>
+                                            <TableCell><Typography></Typography></TableCell>
+                                            <TableCell><Typography>{x.amount}</Typography></TableCell>
+                                            <TableCell><Typography></Typography></TableCell>
+                                            <TableCell><Typography>{x.unit}</Typography></TableCell>
+                                        </TableRow>
+                                    ))
+                                }
+                            </TableHead>
+                        </Table>
+                    <br></br>
+                    <br></br>
+                    <Typography><strong><em>Instructions</em></strong></Typography>
+                    <br></br>
+                    <TextField 
+                        fullWidth 
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        value={instructions}
+                    >
+                    </TextField>
                     </AccordionDetails>
                 </Accordion>
                 <Accordion>
