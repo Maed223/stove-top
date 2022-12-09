@@ -331,9 +331,7 @@ function App() {
                     <div>
                         {user !== {} && user.username === postUser.username ? (
                         <Box>
-                            <Button variant="outlined">
-                                Edit account
-                            </Button>
+                            <Typography size={9}><strong><em>Your Profile</em></strong></Typography>
                         </Box>
                         ) : (
                             <>
