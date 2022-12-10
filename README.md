@@ -71,6 +71,30 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 Stove Top Use Samples:
 
-Signup:
+Signing Up:
+
 ![](https://github.com/Maed223/stove-top/blob/main/Signup.gif)
 
+Signing In:
+
+![](https://github.com/Maed223/stove-top/blob/main/SignIn.gif)
+
+Creating Post:
+
+![](https://github.com/Maed223/stove-top/blob/main/CreatePost.gif)
+
+Post details, commenting, and rating:
+
+![](https://github.com/Maed223/stove-top/blob/main/PostCommentAndRating.gif)
+
+User Profile and Following:
+
+![](https://github.com/Maed223/stove-top/blob/main/Follow.gif)
+
+Cookbook Section and Recipe Finder:
+
+![](https://github.com/Maed223/stove-top/blob/main/Cookbook.gif)
+
+Save Recipes:
+
+![](https://github.com/Maed223/stove-top/blob/main/SaveRecipe.gif)
