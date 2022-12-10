@@ -54,7 +54,7 @@ export function Recipe({title, ingredients, instructions, items, currUser, cookb
                 ingredients: ingredients,
                 instructions: instructions
             }, currUser.email)
-            alert("Recipe has been saved!")
+            alert("Recipe has been removed")
             updateUserCallback()
         }
         removeRecipe().catch(console.error)

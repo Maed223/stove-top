@@ -507,6 +507,9 @@ function App() {
             variant="permanent"
             anchor="right"
             >
+            <br></br>
+            <br></br>
+          
             <Toolbar />
                 <Divider />
                 {user.username ? (
