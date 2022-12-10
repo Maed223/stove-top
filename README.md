@@ -72,5 +72,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 Stove Top Use Samples:
 
 Signup:
-https://github.com/Maed223/stove-top/blob/main/Signup.gif
+![](https://github.com/Maed223/stove-top/blob/main/Signup.gif)
 
